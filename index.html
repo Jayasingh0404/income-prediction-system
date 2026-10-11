@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Income Prediction System | Adult Census ML</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-dark: #0B0F19;
+      --card-bg: rgba(22, 29, 47, 0.75);
+      --card-border: rgba(255, 255, 255, 0.08);
+      --accent: #3B82F6;
+      --accent-gradient: linear-gradient(135deg, #3B82F6 0%, #8B5CF6 100%);
+      --text-main: #F8FAFC;
+      --text-muted: #94A3B8;
+      --success: #10B981;
+      --warning: #F59E0B;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
+      background: radial-gradient(circle at top right, #1E1B4B 0%, #0B0F19 60%, #030712 100%);
+      color: var(--text-main);
+      min-height: 100vh;
+      line-height: 1.6;
+      padding: 2rem 1rem;
+    }
+
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    /* Header */
+    header {
+      text-align: center;
+      margin-bottom: 2.5rem;
+    }
+
+    .badge-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: rgba(59, 130, 246, 0.15);
+      border: 1px solid rgba(59, 130, 246, 0.3);
+      color: #93C5FD;
+      padding: 0.4rem 1.1rem;
+      border-radius: 9999px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-bottom: 1.2rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    h1 {
+      font-size: 2.8rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, #FFFFFF 30%, #94A3B8 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 0.8rem;
+      letter-spacing: -0.02em;
+    }
+
+    .subtitle {
+      font-size: 1.15rem;
+      color: var(--text-muted);
+      max-width: 680px;
+      margin: 0 auto;
+    }
+
+    /* Grid Layout */
+    .grid {
+      display: grid;
+      grid-template-columns: 1.15fr 0.85fr;
+      gap: 1.8rem;
+    }
+
+    @media (max-width: 900px) {
+      .grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* Glass Cards */
+    .card {
+      background: var(--card-bg);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--card-border);
+      border-radius: 18px;
+      padding: 1.8rem;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+    }
+
+    .card-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      margin-bottom: 1.4rem;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      color: #E2E8F0;
+    }
+
+    /* Form Fields */
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin-bottom: 1.1rem;
+    }
+
+    @media (max-width: 580px) {
+      .form-row {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+    }
+
+    label {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #CBD5E1;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .val-display {
+      color: #60A5FA;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    input, select {
+      background: rgba(15, 23, 42, 0.7);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 10px;
+      padding: 0.65rem 0.85rem;
+      color: #F8FAFC;
+      font-family: inherit;
+      font-size: 0.92rem;
+      outline: none;
+      transition: all 0.2s ease;
+    }
+
+    input:focus, select:focus {
+      border-color: #3B82F6;
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25);
+    }
+
+    input[type="range"] {
+      padding: 0.3rem 0;
+      accent-color: #3B82F6;
+      cursor: pointer;
+    }
+
+    /* Button */
+    .btn-predict {
+      background: var(--accent-gradient);
+      color: #FFFFFF;
+      border: none;
+      width: 100%;
+      padding: 0.95rem;
+      border-radius: 12px;
+      font-size: 1.05rem;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      margin-top: 0.6rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+    }
+
+    .btn-predict:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 28px rgba(59, 130, 246, 0.6);
+    }
+
+    /* Result Panel */
+    .result-box {
+      background: rgba(15, 23, 42, 0.8);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 14px;
+      padding: 1.5rem;
+      text-align: center;
+      margin-bottom: 1.4rem;
+      transition: all 0.3s ease;
+    }
+
+    .result-badge {
+      font-size: 1.4rem;
+      font-weight: 800;
+      padding: 0.6rem 1.4rem;
+      border-radius: 10px;
+      display: inline-block;
+      margin-bottom: 0.8rem;
+    }
+
+    .badge-above {
+      background: rgba(16, 185, 129, 0.15);
+      border: 1px solid rgba(16, 185, 129, 0.4);
+      color: #34D399;
+    }
+
+    .badge-below {
+      background: rgba(245, 158, 11, 0.15);
+      border: 1px solid rgba(245, 158, 11, 0.4);
+      color: #FBBF24;
+    }
+
+    /* Gauge / Bar */
+    .prob-track {
+      width: 100%;
+      height: 12px;
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 9999px;
+      overflow: hidden;
+      margin: 1rem 0 0.5rem 0;
+    }
+
+    .prob-fill {
+      height: 100%;
+      width: 0%;
+      background: var(--accent-gradient);
+      border-radius: 9999px;
+      transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .prob-stat {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      display: flex;
+      justify-content: space-between;
+    }
+
+    /* Model Stat List */
+    .stat-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      margin-top: 1.2rem;
+    }
+
+    .stat-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.75rem 1rem;
+      background: rgba(15, 23, 42, 0.6);
+      border-radius: 10px;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      font-size: 0.88rem;
+    }
+
+    .stat-tag {
+      font-family: 'JetBrains Mono', monospace;
+      color: #60A5FA;
+      font-weight: 600;
+    }
+
+    /* Link bar */
+    .link-bar {
+      display: flex;
+      justify-content: center;
+      gap: 1.5rem;
+      margin-top: 2.5rem;
+    }
+
+    .link-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      text-decoration: none;
+      color: #94A3B8;
+      font-size: 0.9rem;
+      transition: color 0.2s ease;
+    }
+
+    .link-pill:hover {
+      color: #F8FAFC;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="badge-pill">✨ Machine Learning Classification System</div>
+      <h1>Adult Census Income Predictor</h1>
+      <p class="subtitle">Predicts whether an individual's annual income exceeds $50,000 using statistical and machine learning classifiers trained on census demographic data.</p>
+    </header>
+
+    <div class="grid">
+      <!-- Input Card -->
+      <div class="card">
+        <div class="card-title">📋 Individual Profile Attributes</div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Age: <span id="ageVal" class="val-display">38</span> yrs</label>
+            <input type="range" id="age" min="17" max="90" value="38" oninput="updateVal('ageVal', this.value)" />
+          </div>
+          <div class="form-group">
+            <label>Hours per Week: <span id="hoursVal" class="val-display">40</span> hrs</label>
+            <input type="range" id="hours" min="1" max="100" value="40" oninput="updateVal('hoursVal', this.value)" />
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Education Level</label>
+            <select id="education">
+              <option value="16">Doctorate (PhD / Prof) - 16 yrs</option>
+              <option value="14">Masters Degree - 14 yrs</option>
+              <option value="13" selected>Bachelors Degree - 13 yrs</option>
+              <option value="12">Associate Degree (Academic) - 12 yrs</option>
+              <option value="11">Associate Degree (Vocational) - 11 yrs</option>
+              <option value="10">Some College - 10 yrs</option>
+              <option value="9">HS-graduate - 9 yrs</option>
+              <option value="7">11th / 12th Grade - 7-8 yrs</option>
+              <option value="4">Primary School - 1-4 yrs</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Workclass</label>
+            <select id="workclass">
+              <option value="Private" selected>Private</option>
+              <option value="Self-emp-inc">Self-Employed (Incorporated)</option>
+              <option value="Self-emp-not-inc">Self-Employed (Not Inc)</option>
+              <option value="Federal-gov">Federal Government</option>
+              <option value="State-gov">State Government</option>
+              <option value="Local-gov">Local Government</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Marital Status</label>
+            <select id="marital">
+              <option value="Married-civ-spouse" selected>Married (Civilian Spouse)</option>
+              <option value="Never-married">Never Married</option>
+              <option value="Divorced">Divorced</option>
+              <option value="Separated">Separated</option>
+              <option value="Widowed">Widowed</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Occupation</label>
+            <select id="occupation">
+              <option value="Exec-managerial" selected>Executive / Managerial</option>
+              <option value="Prof-specialty">Professional Specialty</option>
+              <option value="Tech-support">Technical Support</option>
+              <option value="Sales">Sales</option>
+              <option value="Craft-repair">Craft / Repair</option>
+              <option value="Adm-clerical">Admin / Clerical</option>
+              <option value="Other-service">Other Service</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Capital Gain ($)</label>
+            <input type="number" id="capitalGain" min="0" max="100000" value="0" step="500" />
+          </div>
+          <div class="form-group">
+            <label>Capital Loss ($)</label>
+            <input type="number" id="capitalLoss" min="0" max="10000" value="0" step="100" />
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Gender</label>
+            <select id="gender">
+              <option value="Male" selected>Male</option>
+              <option value="Female">Female</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Region of Origin</label>
+            <select id="region">
+              <option value="North America" selected>North America</option>
+              <option value="Europe">Europe</option>
+              <option value="Asia">Asia</option>
+              <option value="Latin America">Latin America</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+        </div>
+
+        <button class="btn-predict" onclick="calculatePrediction()">🚀 Run Prediction</button>
+      </div>
+
+      <!-- Results & Metrics -->
+      <div>
+        <div class="card">
+          <div class="card-title">🎯 Model Prediction</div>
+
+          <div class="result-box">
+            <div id="resultBadge" class="result-badge badge-above">Income > $50K / Year</div>
+            <p id="resultText" style="color: #CBD5E1; font-size: 0.95rem;">High earning individual profile identified.</p>
+
+            <div class="prob-track">
+              <div id="probFill" class="prob-fill" style="width: 72%;"></div>
+            </div>
+            <div class="prob-stat">
+              <span>Estimated Probability:</span>
+              <strong id="probNum" class="stat-tag" style="font-size: 1rem;">72.4%</strong>
+            </div>
+          </div>
+
+          <div class="card-title" style="margin-top: 1.5rem; font-size: 1.1rem;">📊 Model Evaluation Summary</div>
+          <div class="stat-list">
+            <div class="stat-item">
+              <span>Logistic Regression (Production)</span>
+              <span class="stat-tag">85.15% Acc</span>
+            </div>
+            <div class="stat-item">
+              <span>Ridge Classifier</span>
+              <span class="stat-tag">77.56% Acc</span>
+            </div>
+            <div class="stat-item">
+              <span>Gaussian Naive Bayes</span>
+              <span class="stat-tag">51.48% Acc</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="link-bar">
+      <a class="link-pill" href="https://github.com/Jayasingh0404/income-prediction-system" target="_blank">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+        GitHub Repository
+      </a>
+      <a class="link-pill" href="https://income-prediction-system.streamlit.app" target="_blank">
+        ⚡ Open Streamlit App
+      </a>
+    </div>
+  </div>
+
+  <script>
+    function updateVal(id, val) {
+      document.getElementById(id).innerText = val;
+      calculatePrediction();
+    }
+
+    function calculatePrediction() {
+      const age = parseInt(document.getElementById('age').value);
+      const hours = parseInt(document.getElementById('hours').value);
+      const eduNum = parseInt(document.getElementById('education').value);
+      const capGain = parseFloat(document.getElementById('capitalGain').value) || 0;
+      const capLoss = parseFloat(document.getElementById('capitalLoss').value) || 0;
+      const marital = document.getElementById('marital').value;
+      const occ = document.getElementById('occupation').value;
+      const workclass = document.getElementById('workclass').value;
+      const gender = document.getElementById('gender').value;
+
+      // Logistic regression formula based on standardized coefficients
+      let z = -4.1; // Base bias
+      z += (age - 38.6) * 0.042;
+      z += (hours - 40.4) * 0.038;
+      z += (eduNum - 10.1) * 0.32;
+      z += Math.log1p(capGain) * 0.28;
+      z -= Math.log1p(capLoss) * 0.12;
+
+      if (marital === 'Married-civ-spouse') z += 1.85;
+      else if (marital === 'Never-married') z -= 0.65;
+
+      if (occ === 'Exec-managerial') z += 0.95;
+      else if (occ === 'Prof-specialty') z += 0.85;
+      else if (occ === 'Other-service') z -= 0.8;
+
+      if (workclass === 'Self-emp-inc') z += 0.45;
+      if (gender === 'Male') z += 0.35;
+
+      const prob = 1 / (1 + Math.exp(-z));
+      const pct = (prob * 100).toFixed(1);
+
+      const badge = document.getElementById('resultBadge');
+      const text = document.getElementById('resultText');
+      const fill = document.getElementById('probFill');
+      const num = document.getElementById('probNum');
+
+      fill.style.width = pct + '%';
+      num.innerText = pct + '%';
+
+      if (prob >= 0.5) {
+        badge.className = 'result-badge badge-above';
+        badge.innerText = '✅ Income > $50K / Year';
+        text.innerText = 'High earning individual profile identified.';
+      } else {
+        badge.className = 'result-badge badge-below';
+        badge.innerText = '⚠️ Income ≤ $50K / Year';
+        text.innerText = 'Moderate or entry earning individual profile identified.';
+      }
+    }
+
+    // Run on load
+    window.addEventListener('DOMContentLoaded', calculatePrediction);
+  </script>
+</body>
+</html>
